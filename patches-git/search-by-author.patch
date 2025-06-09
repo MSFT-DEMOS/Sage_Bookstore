@@ -1,0 +1,97 @@
+From 3a5cf2123cb5a94a17e476bb0b44564977bfec5a Mon Sep 17 00:00:00 2001
+From: Colin Dembovsky <colindembovsky@gmail.com>
+Date: Thu, 3 Aug 2023 15:29:09 +0000
+Subject: [PATCH] author - add new search method
+
+---
+ .../com/github/demo/service/BookDatabase.java |  2 +
+ .../github/demo/service/BookDatabaseImpl.java | 41 +++++++++++++++++++
+ .../com/github/demo/service/BookService.java  |  4 ++
+ .../com/github/demo/servlet/BookServlet.java  |  5 +++
+ 4 files changed, 52 insertions(+)
+
+diff --git a/src/main/java/com/github/demo/service/BookDatabase.java b/src/main/java/com/github/demo/service/BookDatabase.java
+index 6c148ff..4094d29 100644
+--- a/src/main/java/com/github/demo/service/BookDatabase.java
++++ b/src/main/java/com/github/demo/service/BookDatabase.java
+@@ -16,2 +16,4 @@ public interface BookDatabase {
+     void destroy() throws BookServiceException;
++
++    List<Book> getBooksByAuthor(String name) throws BookServiceException;
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/github/demo/service/BookDatabaseImpl.java b/src/main/java/com/github/demo/service/BookDatabaseImpl.java
+index 9023ef5..4017c5d 100644
+--- a/src/main/java/com/github/demo/service/BookDatabaseImpl.java
++++ b/src/main/java/com/github/demo/service/BookDatabaseImpl.java
+@@ -146,2 +146,43 @@ public class BookDatabaseImpl implements BookDatabase {
+
++    @Override
++    public List<Book> getBooksByAuthor(String name) throws BookServiceException {
++        List<Book> books = new ArrayList<Book>();
++
++        if (!isValid()) {
++            throw new BookServiceException("Database connection is not valid, check logs for failure details.");
++        }
++
++        Statement stmt = null;
++
++        try {
++            stmt = connection.createStatement();
++            String query = "SELECT * FROM books WHERE author LIKE '%" + name + "%'";
++
++            ResultSet results = stmt.executeQuery(query);
++
++            while (results.next()) {
++                Book book = new Book(
++                    results.getString("author"),
++                    results.getString("title"),
++                    results.getString("image")
++                );
++                books.add(book);
++            }
++        } catch (SQLException e) {
++            logger.error("Failed while searching for {}'", name);
++            throw new BookServiceException(e);
++        } finally {
++            try {
++                if (stmt != null) {
++                    stmt.close();
++                }
++            } catch (SQLException se) {
++                // Do nothing
++            } finally {
++                stmt = null;
++            }
++        }
++        return books;
++    }
++
+     @Override
+diff --git a/src/main/java/com/github/demo/service/BookService.java b/src/main/java/com/github/demo/service/BookService.java
+index e69f4f0..a0ffb9e 100644
+--- a/src/main/java/com/github/demo/service/BookService.java
++++ b/src/main/java/com/github/demo/service/BookService.java
+@@ -29,2 +29,6 @@ public class BookService {
+     }
++
++    public List<Book> searchBooksByAuthor(String name) throws BookServiceException {
++        return this.booksDatabase.getBooksByAuthor(name);
++    }
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/github/demo/servlet/BookServlet.java b/src/main/java/com/github/demo/servlet/BookServlet.java
+index 956d5d3..d360a20 100644
+--- a/src/main/java/com/github/demo/servlet/BookServlet.java
++++ b/src/main/java/com/github/demo/servlet/BookServlet.java
+@@ -79,2 +79,7 @@ public class BookServlet extends HttpServlet {
+
++        String author = req.getParameter("author");
++        if (author != null) {
++            return bookService.searchBooksByAuthor(author);
++        }
++
+         return bookService.getBooks();
+--
+2.41.0
+

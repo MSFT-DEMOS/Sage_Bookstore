@@ -1,0 +1,24 @@
+From d5f522d9f92f1fa5433fa0b647c9c1fb84e0e8f9 Mon Sep 17 00:00:00 2001
+From: Colin Dembovsky <colindembovsky@gmail.com>
+Date: Thu, 3 Aug 2023 15:22:51 +0000
+Subject: [PATCH] title - add call to method
+
+---
+ src/main/java/com/github/demo/servlet/BookServlet.java | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/main/java/com/github/demo/servlet/BookServlet.java b/src/main/java/com/github/demo/servlet/BookServlet.java
+index 956d5d3..739d2a6 100644
+--- a/src/main/java/com/github/demo/servlet/BookServlet.java
++++ b/src/main/java/com/github/demo/servlet/BookServlet.java
+@@ -79,2 +79,7 @@ public class BookServlet extends HttpServlet {
+ 
++        String title = req.getParameter("title");
++        if (title != null) {
++            return bookService.searchBooksByTitle(title);
++        }
++
+         return bookService.getBooks();
+-- 
+2.41.0
+

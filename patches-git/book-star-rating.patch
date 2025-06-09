@@ -1,0 +1,113 @@
+From cf74c5e07da7c821d27a4f8941a8c37846468d17 Mon Sep 17 00:00:00 2001
+From: Colin Dembovsky <colindembovsky@gmail.com>
+Date: Thu, 3 Aug 2023 18:59:26 +0000
+Subject: [PATCH] Add star rating
+
+---
+ src/main/java/com/github/demo/model/Book.java | 25 ++++++++++++++++++-
+ .../github/demo/service/BookDatabaseImpl.java |  7 ++++--
+ .../com/github/demo/service/BookUtils.java    | 12 ++++-----
+ src/main/webapp/static/books.html             |  7 ++++++
+ 4 files changed, 42 insertions(+), 9 deletions(-)
+
+diff --git a/src/main/java/com/github/demo/model/Book.java b/src/main/java/com/github/demo/model/Book.java
+index ca14e0c..6ab4a50 100644
+--- a/src/main/java/com/github/demo/model/Book.java
++++ b/src/main/java/com/github/demo/model/Book.java
+@@ -13,4 +13,9 @@ public class Book {
+ 
+-    public Book() {
++    private int rating;
+ 
++    public Book() {
++        this.title = "";
++        this.author = "";
++        this.cover = "";
++        this.rating = 0;
+     }
+@@ -18,2 +23,3 @@ public class Book {
+     public Book(String author, String title) {
++        this();
+         this.author = author;
+@@ -23,2 +29,3 @@ public class Book {
+     public Book(String author, String title, String cover) {
++        this();
+         this.author = author;
+@@ -28,2 +35,10 @@ public class Book {
+ 
++    public Book(String author, String title, String cover, int rating) {
++        this();
++        this.author = author;
++        this.title = title;
++        this.cover = cover;
++        this.rating = rating;
++    }
++
+     public String getTitle() {
+@@ -55,2 +70,10 @@ public class Book {
+     }
++
++    public int getRating() {
++        return rating;
++    }
++
++    public void setRating(int rating) {
++        this.rating = rating;
++    }
+ }
+diff --git a/src/main/java/com/github/demo/service/BookDatabaseImpl.java b/src/main/java/com/github/demo/service/BookDatabaseImpl.java
+index 9023ef5..68753a5 100644
+--- a/src/main/java/com/github/demo/service/BookDatabaseImpl.java
++++ b/src/main/java/com/github/demo/service/BookDatabaseImpl.java
+@@ -94,3 +94,4 @@ public class BookDatabaseImpl implements BookDatabase {
+                     rs.getString("title"),
+-                    rs.getString("image")
++                    rs.getString("image"),
++                    rs.getInt("rating")
+                 );
+@@ -125,3 +126,4 @@ public class BookDatabaseImpl implements BookDatabase {
+                     results.getString("title"),
+-                    results.getString("image")
++                    results.getString("image"),
++                    results.getInt("rating")
+                 );
+@@ -171,2 +173,3 @@ public class BookDatabaseImpl implements BookDatabase {
+                     ps.setString(3, book.getCover());
++                    ps.setInt(4, book.getRating());
+                     ps.execute();
+diff --git a/src/main/java/com/github/demo/service/BookUtils.java b/src/main/java/com/github/demo/service/BookUtils.java
+index 6232d5a..848bfd5 100644
+--- a/src/main/java/com/github/demo/service/BookUtils.java
++++ b/src/main/java/com/github/demo/service/BookUtils.java
+@@ -12,8 +12,8 @@ public class BookUtils {
+ 
+-        books.add(new Book("Jeff Sutherland","Scrum: The Art of Doing Twice the Work in Half the Time", "scrum.jpg"));
+-        books.add(new Book("Eric Ries","The Lean Startup: How Constant Innovation Creates Radically Successful Businesses", "lean.jpg"));
+-        books.add(new Book("Geoffrey A. Moore","Crossing the Chasm", "chasm.jpg"));
+-        books.add(new Book("David Thomas","The Pragmatic Programmer: From Journeyman to Master", "pragmatic.jpg"));
+-        books.add(new Book("Frederick P. Brooks Jr.", "The Mythical Man-Month: Essays on Software Engineering", "month.jpg"));
+-        books.add(new Book("Steve Krug","Don't Make Me Think, Revisited: A Common Sense Approach to Web Usability", "think.jpg"));
++        books.add(new Book("Jeff Sutherland", "Scrum: The Art of Doing Twice the Work in Half the Time", "scrum.jpg", 5));
++        books.add(new Book("Eric Ries", "The Lean Startup: How Constant Innovation Creates Radically Successful Businesses", "lean.jpg", 2));
++        books.add(new Book("Geoffrey A. Moore", "Crossing the Chasm", "chasm.jpg", 4));
++        books.add(new Book("David Thomas", "The Pragmatic Programmer: From Journeyman to Master", "pragmatic.jpg", 1));
++        books.add(new Book("Frederick P. Brooks Jr.", "The Mythical Man-Month: Essays on Software Engineering", "month.jpg", 5));
++        books.add(new Book("Steve Krug", "Don't Make Me Think, Revisited: A Common Sense Approach to Web Usability", "think.jpg", 3));
+ 
+diff --git a/src/main/webapp/static/books.html b/src/main/webapp/static/books.html
+index dbba20d..69b19e5 100644
+--- a/src/main/webapp/static/books.html
++++ b/src/main/webapp/static/books.html
+@@ -82,2 +82,9 @@
+                   <span>Status: </span><span class="text-success"><strong>In Stock</strong></span>
++                  <!-- Rating shown in stars -->
++                  <div>
++                    <span>Rating: </span>
++                    <span th:each="i : ${#numbers.sequence(1, book.rating)}">
++                      <img src="/static/images/star.png" style="width: 12px; height: 12px;" />
++                    </span>
++                  </div>
+                 </div>
+-- 
+2.41.0
+

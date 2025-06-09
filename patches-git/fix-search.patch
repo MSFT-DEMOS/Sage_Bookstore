@@ -1,0 +1,28 @@
+From 8cd506212c5adbd2b13e8274f8c882d571328310 Mon Sep 17 00:00:00 2001
+From: Colin Dembovsky <colindembovsky@gmail.com>
+Date: Thu, 3 Aug 2023 19:27:41 +0000
+Subject: [PATCH] Fix bug
+
+---
+ .../java/com/github/demo/service/BookDatabaseImpl.java     | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/main/java/com/github/demo/service/BookDatabaseImpl.java b/src/main/java/com/github/demo/service/BookDatabaseImpl.java
+index 9023ef5..72b31dd 100644
+--- a/src/main/java/com/github/demo/service/BookDatabaseImpl.java
++++ b/src/main/java/com/github/demo/service/BookDatabaseImpl.java
+@@ -113,7 +113,8 @@ public class BookDatabaseImpl implements BookDatabase {
+ 
+-        Statement stmt = null;
++        PreparedStatement stmt = null;
+ 
+         try {
+-            stmt = connection.createStatement();
+-            String query = "SELECT * FROM books WHERE title LIKE '%" + name + "%'";
++            String query = "SELECT * FROM books WHERE title LIKE ?";
++            stmt = connection.prepareStatement(query);
++            stmt.setString(1, "%" + name + "%");
+ 
+-- 
+2.41.0
+
